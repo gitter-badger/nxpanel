@@ -2,7 +2,14 @@ body {
   background: #2d2d30;
 }
 
-.container {
+.container-header {
   padding-top: 60px;
+  height: 250px;
   background-color: #000011;
+  color: #ede9ff;
+  text-align: center;
+}
+
+.container-main {
+  padding: 15px 30px 15px 30px;
 }

@@ -1,1 +1,1 @@
-{"version":3,"sources":["navbar.js"],"names":[],"mappings":"AAAA;AACA","file":"all.js","sourcesContent":["var vari = '';\r\n"],"sourceRoot":"/source/"}
+{"version":3,"sources":["navbar.js"],"names":[],"mappings":"AAAA;AACA;AACA;AACA;AACA;AACA","file":"all.js","sourcesContent":["var loc = window.location.pathname;\r\n\r\n$('nav').find('a').each(function() {\r\n    $(this).toggleClass('active', $(this).attr('href') == loc);\r\n});\r\n"],"sourceRoot":"/source/"}
