@@ -14,7 +14,7 @@
         <!-- Collect the nav links, forms, and other content for toggling -->
         <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
             <ul class="nav navbar-nav">
-                <li><a href="#">Home <span class="sr-only">(current)</span></a></li>
+                <li><a class="active" href="/home">Home <span class="sr-only">(current)</span></a></li>
                 <li><a href="#">Documentation</a></li>
                 <li class="dropdown">
                     <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Community <span class="caret"></span></a>
@@ -29,7 +29,7 @@
             </ul>
             <form class="navbar-form navbar-left" role="search">
                 <div class="form-group">
-                    <input type="text" class="form-control" placeholder="Search Documentation">
+                    <input type="text" class="form-control" placeholder="Search" size="40">
                 </div>
             </form>
             <ul class="nav navbar-nav navbar-right">

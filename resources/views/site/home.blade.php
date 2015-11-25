@@ -1,14 +1,6 @@
-<!DOCTYPE html>
-<html>
-@include('partials.head')
-<body>
-@include('partials.nav')
-<div class="container-header">
-    <div class="container">
+@extends('master')
 
-    </div>
-</div>
-<div class="container-main">
+@section('container-main')
     <div class="row">
         <div class="col-md-2">
             <div class="panel panel-default">
@@ -26,9 +18,4 @@
             </div>
         </div>
     </div>
-</div>
-
-<!-- LOAD FOOTER -->
-@include('partials.footer')
-</body>
-</html>
+@endsection

@@ -1,5 +1,8 @@
-var loc = window.location.pathname;
+var url = window.location;
+// Will only work if string in href matches with location
+$('ul.nav a[href="'+ url +'"]').parent().addClass('active');
 
-$('nav').find('a').each(function() {
-    $(this).toggleClass('active', $(this).attr('href') == loc);
-});
+// Will also work for relative and absolute hrefs
+$('ul.nav a').filter(function() {
+    return this.href == url;
+}).parent().addClass('active');
