@@ -8,14 +8,14 @@
                 <span class="icon-bar"></span>
                 <span class="icon-bar"></span>
             </button>
-            <a class="navbar-brand" href="#">NxPanel</a>
+            <a class="navbar-brand" href="{{route('Site::index')}}">NxPanel</a>
         </div>
 
         <!-- Collect the nav links, forms, and other content for toggling -->
         <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
             <ul class="nav navbar-nav">
-                <li><a class="active" href="/home">Home <span class="sr-only">(current)</span></a></li>
-                <li><a href="#">Documentation</a></li>
+                <li><a class="active" href="{{route('Site::index')}}">Home <span class="sr-only">(current)</span></a></li>
+                <li><a href="{{route('Support::docs')}}">Documentation</a></li>
                 <li class="dropdown">
                     <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Community <span class="caret"></span></a>
                     <ul class="dropdown-menu">

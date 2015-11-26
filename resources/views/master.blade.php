@@ -1,18 +1,16 @@
 <!DOCTYPE html>
 <html>
-@include('partials.head')
-<body>
-@include('partials.nav')
-<div class="container-header">
-    <div class="container">
+    @include('partials.head')
 
-    </div>
-</div>
-<div class="container-main">
-    @yield('container-main')
-</div>
+    <body>
+        <div class="padding-top-60"></div>
+        @include('partials.nav')
 
-<!-- LOAD FOOTER -->
-@include('partials.footer')
-</body>
+        <div class="container-main">
+            @yield('container-main')
+        </div>
+
+        <!-- LOAD FOOTER -->
+        @include('partials.footer')
+    </body>
 </html>

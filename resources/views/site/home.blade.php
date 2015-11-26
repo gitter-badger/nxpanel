@@ -1,5 +1,11 @@
 @extends('master')
 
+<div class="container-header">
+    <div class="container">
+
+    </div>
+</div>
+
 @section('container-main')
     <div class="row">
         <div class="col-md-2">
