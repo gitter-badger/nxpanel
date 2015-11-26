@@ -16,7 +16,7 @@ class DocsController extends Controller
      */
     public function index()
     {
-        return view('docs.install');
+        return view('docs.index');
     }
 
     /**
