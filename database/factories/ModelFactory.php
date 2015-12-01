@@ -21,14 +21,6 @@ $factory->define(App\User::class, function (Faker\Generator $faker) {
 });
 
 $factory->define(App\Profile::class, function (Faker\Generator $faker) {
-    //    $table->string('address');
-    //    $table->string('city');
-    //    $table->string('state');
-    //    $table->string('h_phone');
-    //    $table->string('m_phone');
-    //    $table->string('f_phone');
-    //    $table->integer('age');
-    //    $table->string('gender');
 
     return [
         'address' => $faker->address,

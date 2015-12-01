@@ -44,4 +44,12 @@ class User extends Model implements AuthenticatableContract,
     {
         return $this->hasOne('App\Profile');
     }
+
+    /**
+     * The roles that belong to the user.
+     */
+    public function roles()
+    {
+        return $this->belongsToMany('App\Role');
+    }
 }
