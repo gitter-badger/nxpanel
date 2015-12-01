@@ -33,17 +33,22 @@
                 </div>
             </form>
             <ul class="nav navbar-nav navbar-right">
-                <li><a href="#">Register</a></li>
-                <li class="dropdown">
-                    <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Username <span class="caret"></span></a>
-                    <ul class="dropdown-menu">
-                        <li><a href="#">Profile</a></li>
-                        <li><a href="#">Account</a></li>
-                        <li><a href="#">Messages</a></li>
-                        <li role="separator" class="divider"></li>
-                        <li><a href="#">Logout</a></li>
-                    </ul>
-                </li>
+                @if(!Auth::check())
+                    <li><a href="{{route('Auth::register')}}">Register</a></li>
+                    <li><a href="{{route('Auth::login')}}">Login</a></li>
+                @else
+                    <li class="dropdown">
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Username <span class="caret"></span></a>
+                        <ul class="dropdown-menu">
+                            <li><a href="#">Profile</a></li>
+                            <li><a href="#">Account</a></li>
+                            <li><a href="#">Messages</a></li>
+                            <li role="separator" class="divider"></li>
+                            <li><a href="{{route('Auth::logout')}}">Logout</a></li>
+                        </ul>
+                    </li>
+                @endif
+
             </ul>
         </div><!-- /.navbar-collapse -->
     </div><!-- /.container-fluid -->

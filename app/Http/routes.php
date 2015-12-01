@@ -41,3 +41,31 @@ Route::group(['namespace' => 'User', 'middleware' => 'auth', 'prefix' => 'user']
     Route::get('/', 'UserController@index');
     Route::get('{id}/profile', 'ProfileController@index');
 });
+
+// Authentication routes...
+Route::group(['namespace' => 'Auth', 'as' => 'Auth::', 'prefix' => 'auth'], function() {
+    Route::get('/login', [
+        'as' => 'login',
+        'uses' => 'AuthController@getLogin'
+    ]);
+
+    Route::post('/login', [
+        'as' => 'post_login',
+        'uses' => 'AuthController@postLogin'
+    ]);
+
+    Route::get('/logout', [
+        'as' => 'logout',
+        'uses' => 'AuthController@getLogout'
+    ]);
+
+    Route::get('/register', [
+        'as' => 'register',
+        'uses' => 'AuthController@getRegister'
+    ]);
+
+    Route::post('/register', [
+        'as' => 'post_register',
+        'uses' => 'AuthController@postRegister'
+    ]);
+});

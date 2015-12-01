@@ -19,3 +19,25 @@ $factory->define(App\User::class, function (Faker\Generator $faker) {
         'remember_token' => str_random(10),
     ];
 });
+
+$factory->define(App\Profile::class, function (Faker\Generator $faker) {
+    //    $table->string('address');
+    //    $table->string('city');
+    //    $table->string('state');
+    //    $table->string('h_phone');
+    //    $table->string('m_phone');
+    //    $table->string('f_phone');
+    //    $table->integer('age');
+    //    $table->string('gender');
+
+    return [
+        'address' => $faker->address,
+        'city' => $faker->city,
+        'state' => $faker->randomLetter . $faker->randomLetter,
+        'h_phone' => $faker->phoneNumber,
+        'm_phone' => $faker->phoneNumber,
+        'f_phone' => $faker->phoneNumber,
+        'age' => $faker->numberBetween(5,80),
+        'gender' => $faker->randomElement(['M', 'F'])
+    ];
+});
