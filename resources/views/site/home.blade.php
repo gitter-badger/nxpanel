@@ -19,7 +19,11 @@
         <div class="col-md-10">
             <div class="panel panel-default">
                 <div class="panel-body">
-                    test ...
+                    @if(Auth::check())
+                        {{Auth::user()->roles()->first()->permissions()->first()->name}}
+                    @else
+
+                    @endif
                 </div>
             </div>
         </div>

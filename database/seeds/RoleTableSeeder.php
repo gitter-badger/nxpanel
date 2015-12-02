@@ -20,8 +20,10 @@ class RoleTableSeeder extends Seeder
 
         foreach($arr as $role) {
             App\Role::create([
-                'name' => $role
-            ]);
+                'name' => strtolower($role),
+                'display_name' => $role,
+                'description' => 'Edit the description for ' . $role,
+            ])->permissions()->attach(4);
         }
     }
 }
