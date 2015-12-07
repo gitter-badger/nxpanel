@@ -20,6 +20,14 @@ $factory->define(App\User::class, function (Faker\Generator $faker) {
     ];
 });
 
+$factory->define(App\Post::class, function (Faker\Generator $faker) {
+    return [
+        'user_id' => rand(1,50),
+        'title' => $faker->sentence(),
+        'body' => $faker->paragraph()
+    ];
+});
+
 $factory->define(App\Profile::class, function (Faker\Generator $faker) {
 
     return [

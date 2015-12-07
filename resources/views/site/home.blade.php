@@ -11,7 +11,9 @@
         <div class="col-md-2">
             <div class="panel panel-default">
                 <div class="panel-body">
-                    test ...
+                    @can('create.user')
+                        <h1>CAN CREATE A USER</h1>
+                    @endcan
                 </div>
             </div>
 
@@ -20,7 +22,7 @@
             <div class="panel panel-default">
                 <div class="panel-body">
                     @if(Auth::check())
-                        {{Auth::user()->roles()->first()->permissions()->first()->name}}
+
                     @else
 
                     @endif

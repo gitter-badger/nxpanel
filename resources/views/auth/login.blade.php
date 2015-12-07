@@ -11,10 +11,15 @@
 
                 <div style="padding-top:30px" class="panel-body" >
 
-                    <div id="login-alert" class="alert alert-danger col-sm-12">
-
-                    </div>
-
+                    @if(count($errors) > 0)
+                        <div id="login-alert" class="alert alert-danger col-sm-12">
+                            <ul>
+                                @foreach($errors->all() as $error)
+                                    <li>{{ $error }}</li>
+                                @endforeach
+                            </ul>
+                        </div>
+                    @endif
                     <form id="loginform" class="form-horizontal" role="form" method="post" action="{{route('Auth::post_login')}}">
                         {!! csrf_field() !!}
                         <div style="margin-bottom: 25px" class="input-group">

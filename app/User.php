@@ -2,6 +2,7 @@
 
 namespace App;
 
+use App\Traits\UserHasRoles;
 use Illuminate\Auth\Authenticatable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Auth\Passwords\CanResetPassword;
@@ -14,7 +15,7 @@ class User extends Model implements AuthenticatableContract,
                                     AuthorizableContract,
                                     CanResetPasswordContract
 {
-    use Authenticatable, Authorizable, CanResetPassword;
+    use Authenticatable, Authorizable, CanResetPassword, UserHasRoles;
 
     /**
      * The database table used by the model.
@@ -42,14 +43,13 @@ class User extends Model implements AuthenticatableContract,
      */
     public function profile()
     {
-        return $this->hasOne('App\Profile');
+        return $this->hasOne(Profile::class);
     }
 
     /**
-     * The roles that belong to the user.
+     * Get the posts associated with the user
      */
-    public function roles()
-    {
-        return $this->belongsToMany('App\Role');
+    public function posts() {
+        return $this->hasMany(Post::class);
     }
 }

@@ -26,7 +26,6 @@ class UserTableSeeder extends Seeder
         factory(App\User::class, 50)->create()->each(function($u) {
             $u->profile()->save(factory(App\Profile::class)->make());
 
-            // ERROR
             $u->roles()->attach(rand(1,4));
         });
     }

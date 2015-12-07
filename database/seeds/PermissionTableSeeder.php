@@ -13,12 +13,14 @@ class PermissionTableSeeder extends Seeder
     {
         $actions = [
             'create',
-            'edit',
+            'read',
+            'update',
             'delete'
         ];
 
         $entities = [
             'user',
+            'profile',
             'role',
             'permission',
             'post'
@@ -28,7 +30,7 @@ class PermissionTableSeeder extends Seeder
             foreach($entities as $entity) {
                 App\Permission::create([
                     'name' => $action . '.' . $entity,
-                    'display_name' => ucfirst($action) . ' ' . ucfirst($entity),
+                    'label' => ucfirst($action) . ' ' . ucfirst($entity),
                     'description' => $action . '.' . $entity . ': Edit Description',
                 ]);
             }

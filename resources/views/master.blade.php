@@ -3,11 +3,13 @@
     @include('partials.head')
 
     <body>
-        <div class="padding-top-60"></div>
-        @include('partials.nav')
+        <div id="app">
+            <div class="padding-top-60"></div>
+            @include('partials.nav')
 
-        <div class="container-main">
-            @yield('container-main')
+            <div class="container-main">
+                @yield('container-main')
+            </div>
         </div>
 
         <!-- LOAD FOOTER -->

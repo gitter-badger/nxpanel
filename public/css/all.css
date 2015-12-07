@@ -2,6 +2,16 @@ body {
   background: #2d2d30;
 }
 
+.nav-tabs {
+  margin-bottom: 20px;
+}
+
+.dashboard-container {
+  background-color: #ffffff;
+  height: 100%;
+  padding: 50px;
+}
+
 .container-header {
   height: 450px;
   background-color: #000011;
@@ -15,5 +25,9 @@ body {
 }
 .padding-top-60 {
   padding-top: 60px;
+}
+
+.margin-top-30 {
+  margin-top: 30px;
 }
 

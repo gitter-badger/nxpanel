@@ -1,71 +1,98 @@
 <?php
-Route::group(['namespace' => 'Site', 'as' => 'Site::'], function () {
-    Route::get('/', function() {
+
+resource('posts', 'PostController');
+
+Route::group(['namespace' => 'Admin', 'as' => 'Admin::', 'prefix' => 'admin', 'middleware' => 'auth'], function() {
+    get('/', function() {
+        if(!Auth::user()->hasRole('user')) {
+            return redirect()->route('Admin::dashboard');
+        }
+
         return redirect()->route('Site::index');
     });
 
-    Route::get('/home', [
+    get('/dashboard', [
+        'as' => 'dashboard',
+        'uses' => 'AdminController@index'
+    ]);
+
+
+});
+
+Route::group(['namespace' => 'Site', 'as' => 'Site::'], function () {
+    get('/', function() {
+        return redirect()->route('Site::index');
+    });
+
+    get('/home', [
         'as' => 'index',
         'uses' => 'SiteController@index'
     ]);
 
-    Route::get('/github', [
+    get('/github', [
         'as' => 'github',
         'uses' => 'SiteController@github'
     ]);
 
-    Route::get('/contribute', [
+    get('/contribute', [
         'as' => 'contribute',
         'uses' => 'SiteController@contribute'
     ]);
 
-    Route::get('/about', [
+    get('/about', [
         'as' => 'about',
         'uses' => 'SiteController@about'
     ]);
 
-    Route::get('/chat', [
-        'as' => 'chat',
-        'uses' => 'ChatController@index'
-    ]);
+//    get('/chat', [
+//        'as' => 'chat',
+//        'uses' => 'ChatController@index'
+//    ]);
 });
 
 Route::group(['namespace' => 'Support', 'as' => 'Support::', 'prefix' => 'support'], function() {
-    Route::get('/docs', [
+    get('/docs', [
         'as' => 'docs',
         'uses' => 'DocsController@index'
     ]);
 });
-
-Route::group(['namespace' => 'User', 'middleware' => 'auth', 'prefix' => 'user'], function () {
-    Route::get('/', 'UserController@index');
-    Route::get('{id}/profile', 'ProfileController@index');
-});
+//
+//group(['namespace' => 'User', 'middleware' => 'auth', 'prefix' => 'user'], function () {
+//    get('/', 'UserController@index');
+//    get('{id}/profile', 'ProfileController@index');
+//});
 
 // Authentication routes...
 Route::group(['namespace' => 'Auth', 'as' => 'Auth::', 'prefix' => 'auth'], function() {
-    Route::get('/login', [
+    get('/login', [
         'as' => 'login',
         'uses' => 'AuthController@getLogin'
     ]);
 
-    Route::post('/login', [
+    post('/login', [
         'as' => 'post_login',
         'uses' => 'AuthController@postLogin'
     ]);
 
-    Route::get('/logout', [
+    get('/logout', [
         'as' => 'logout',
         'uses' => 'AuthController@getLogout'
     ]);
 
-    Route::get('/register', [
+    get('/register', [
         'as' => 'register',
         'uses' => 'AuthController@getRegister'
     ]);
 
-    Route::post('/register', [
+    post('/register', [
         'as' => 'post_register',
         'uses' => 'AuthController@postRegister'
     ]);
+});
+
+// API ROUTES FOR VUE
+Route::group(['prefix' => 'api'], function() {
+    get('users-get', function() {
+        return App\User::all();
+    });
 });

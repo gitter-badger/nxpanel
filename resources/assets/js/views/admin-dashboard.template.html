@@ -1,0 +1,22 @@
+<ul class="nav nav-tabs">
+    <li role="presentation"
+    	v-on:click="updateTab('dashboard')"  
+    	class="active" 
+    	data-toggle="tab"><a href="#">Dashboard</a></li>
+
+    <li role="presentation" 
+    	v-on:click="updateTab('accounts')" 
+    	data-toggle="tab"><a href="#">Accounts</a></li>
+
+    <li role="presentation"
+    	v-on:click="updateTab('roles_perms')"
+    	data-toggle="tab"><a href="#">Roles &amp; Permissions</a></li>
+</ul>
+
+<div class="btn-toolbar pull-right" role="toolbar" aria-label="Toolbar with button groups">
+	<div class="btn-group" role="group" aria-label="First group">
+		<button type="button" class="btn btn-default"><i class="fa fa-refresh"></i></button>
+	</div> 
+</div>
+
+<component is="accounts-table" v-if="tab == 'accounts'"></component>
