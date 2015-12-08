@@ -1,11 +1,28 @@
 var Vue = require('vue');
-
 Vue.use(require('vue-resource'));
 
-new Vue({
+import dashboard from './views/AdminDashboard.vue';
+
+var vm = new Vue({
    el: '#app',
 
+   ready: function() {
+      
+   },
+
+   data: function() {
+	   	return {
+
+	   	}
+   },
+
    components: {
-   	'admin-dashboard': require('./views/admin-dashboard')
-   }
+   		'dashboard': dashboard,
+   },
+
+   methods: {
+
+   },
+
+
 })

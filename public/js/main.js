@@ -92,6 +92,247 @@ process.chdir = function (dir) {
 process.umask = function() { return 0; };
 
 },{}],2:[function(require,module,exports){
+var Vue // late bind
+var map = Object.create(null)
+var shimmed = false
+var isBrowserify = false
+
+/**
+ * Determine compatibility and apply patch.
+ *
+ * @param {Function} vue
+ * @param {Boolean} browserify
+ */
+
+exports.install = function (vue, browserify) {
+  if (shimmed) return
+  shimmed = true
+
+  Vue = vue
+  isBrowserify = browserify
+
+  exports.compatible = !!Vue.internalDirectives
+  if (!exports.compatible) {
+    console.warn(
+      '[HMR] vue-loader hot reload is only compatible with ' +
+      'Vue.js 1.0.0+.'
+    )
+    return
+  }
+
+  // patch view directive
+  patchView(Vue.internalDirectives.component)
+  console.log('[HMR] Vue component hot reload shim applied.')
+  // shim router-view if present
+  var routerView = Vue.elementDirective('router-view')
+  if (routerView) {
+    patchView(routerView)
+    console.log('[HMR] vue-router <router-view> hot reload shim applied.')
+  }
+}
+
+/**
+ * Shim the view directive (component or router-view).
+ *
+ * @param {Object} View
+ */
+
+function patchView (View) {
+  var unbuild = View.unbuild
+  View.unbuild = function (defer) {
+    if (!this.hotUpdating) {
+      var prevComponent = this.childVM && this.childVM.constructor
+      removeView(prevComponent, this)
+      // defer = true means we are transitioning to a new
+      // Component. Register this new component to the list.
+      if (defer) {
+        addView(this.Component, this)
+      }
+    }
+    // call original
+    return unbuild.call(this, defer)
+  }
+}
+
+/**
+ * Add a component view to a Component's hot list
+ *
+ * @param {Function} Component
+ * @param {Directive} view - view directive instance
+ */
+
+function addView (Component, view) {
+  var id = Component && Component.options.hotID
+  if (id) {
+    if (!map[id]) {
+      map[id] = {
+        Component: Component,
+        views: [],
+        instances: []
+      }
+    }
+    map[id].views.push(view)
+  }
+}
+
+/**
+ * Remove a component view from a Component's hot list
+ *
+ * @param {Function} Component
+ * @param {Directive} view - view directive instance
+ */
+
+function removeView (Component, view) {
+  var id = Component && Component.options.hotID
+  if (id) {
+    map[id].views.$remove(view)
+  }
+}
+
+/**
+ * Create a record for a hot module, which keeps track of its construcotr,
+ * instnaces and views (component directives or router-views).
+ *
+ * @param {String} id
+ * @param {Object} options
+ */
+
+exports.createRecord = function (id, options) {
+  if (typeof options === 'function') {
+    options = options.options
+  }
+  if (typeof options.el !== 'string' && typeof options.data !== 'object') {
+    makeOptionsHot(id, options)
+    map[id] = {
+      Component: null,
+      views: [],
+      instances: []
+    }
+  }
+}
+
+/**
+ * Make a Component options object hot.
+ *
+ * @param {String} id
+ * @param {Object} options
+ */
+
+function makeOptionsHot (id, options) {
+  options.hotID = id
+  injectHook(options, 'created', function () {
+    var record = map[id]
+    if (!record.Component) {
+      record.Component = this.constructor
+    }
+    record.instances.push(this)
+  })
+  injectHook(options, 'beforeDestroy', function () {
+    map[id].instances.$remove(this)
+  })
+}
+
+/**
+ * Inject a hook to a hot reloadable component so that
+ * we can keep track of it.
+ *
+ * @param {Object} options
+ * @param {String} name
+ * @param {Function} hook
+ */
+
+function injectHook (options, name, hook) {
+  var existing = options[name]
+  options[name] = existing
+    ? Array.isArray(existing)
+      ? existing.concat(hook)
+      : [existing, hook]
+    : [hook]
+}
+
+/**
+ * Update a hot component.
+ *
+ * @param {String} id
+ * @param {Object|null} newOptions
+ * @param {String|null} newTemplate
+ */
+
+exports.update = function (id, newOptions, newTemplate) {
+  var record = map[id]
+  // force full-reload if an instance of the component is active but is not
+  // managed by a view
+  if (!record || (record.instances.length && !record.views.length)) {
+    console.log('[HMR] Root or manually-mounted instance modified. Full reload may be required.')
+    if (!isBrowserify) {
+      window.location.reload()
+    } else {
+      // browserify-hmr somehow sends incomplete bundle if we reload here
+      return
+    }
+  }
+  if (!isBrowserify) {
+    // browserify-hmr already logs this
+    console.log('[HMR] Updating component: ' + format(id))
+  }
+  var Component = record.Component
+  // update constructor
+  if (newOptions) {
+    // in case the user exports a constructor
+    Component = record.Component = typeof newOptions === 'function'
+      ? newOptions
+      : Vue.extend(newOptions)
+    makeOptionsHot(id, Component.options)
+  }
+  if (newTemplate) {
+    Component.options.template = newTemplate
+  }
+  // handle recursive lookup
+  if (Component.options.name) {
+    Component.options.components[Component.options.name] = Component
+  }
+  // reset constructor cached linker
+  Component.linker = null
+  // reload all views
+  record.views.forEach(function (view) {
+    updateView(view, Component)
+  })
+}
+
+/**
+ * Update a component view instance
+ *
+ * @param {Directive} view
+ * @param {Function} Component
+ */
+
+function updateView (view, Component) {
+  if (!view._bound) {
+    return
+  }
+  view.Component = Component
+  view.hotUpdating = true
+  // disable transitions
+  view.vm._isCompiled = false
+  // save state
+  var state = view.childVM.$data
+  // remount, make sure to disable keep-alive
+  var keepAlive = view.keepAlive
+  view.keepAlive = false
+  view.mountComponent()
+  view.keepAlive = keepAlive
+  // restore state
+  view.childVM.$data = state
+  // re-eanble transitions
+  view.vm._isCompiled = true
+  view.hotUpdating = false
+}
+
+function format (id) {
+  return id.match(/[^\/]+\.vue$/)[0]
+}
+
+},{}],3:[function(require,module,exports){
 /**
  * Service for sending network requests.
  */
@@ -253,7 +494,7 @@ module.exports = function (_) {
     return _.http = Http;
 };
 
-},{"./lib/jsonp":4,"./lib/promise":5,"./lib/xhr":7}],3:[function(require,module,exports){
+},{"./lib/jsonp":5,"./lib/promise":6,"./lib/xhr":8}],4:[function(require,module,exports){
 /**
  * Install plugin.
  */
@@ -294,7 +535,7 @@ if (window.Vue) {
 }
 
 module.exports = install;
-},{"./http":2,"./lib/util":6,"./resource":8,"./url":9}],4:[function(require,module,exports){
+},{"./http":3,"./lib/util":7,"./resource":9,"./url":10}],5:[function(require,module,exports){
 /**
  * JSONP request.
  */
@@ -346,7 +587,7 @@ module.exports = function (_, options) {
 
 };
 
-},{"./promise":5}],5:[function(require,module,exports){
+},{"./promise":6}],6:[function(require,module,exports){
 /**
  * Promises/A+ polyfill v1.1.0 (https://github.com/bramstein/promis)
  */
@@ -558,7 +799,7 @@ if (window.MutationObserver) {
 
 module.exports = window.Promise || Promise;
 
-},{}],6:[function(require,module,exports){
+},{}],7:[function(require,module,exports){
 /**
  * Utility functions.
  */
@@ -640,7 +881,7 @@ module.exports = function (Vue) {
     return _;
 };
 
-},{}],7:[function(require,module,exports){
+},{}],8:[function(require,module,exports){
 /**
  * XMLHttp request.
  */
@@ -693,7 +934,7 @@ module.exports = function (_, options) {
     return promise;
 };
 
-},{"./promise":5}],8:[function(require,module,exports){
+},{"./promise":6}],9:[function(require,module,exports){
 /**
  * Service for interacting with RESTful services.
  */
@@ -806,7 +1047,7 @@ module.exports = function (_) {
     return _.resource = Resource;
 };
 
-},{}],9:[function(require,module,exports){
+},{}],10:[function(require,module,exports){
 /**
  * Service for URL templating.
  */
@@ -965,7 +1206,7 @@ module.exports = function (_) {
     return _.url = Url;
 };
 
-},{}],10:[function(require,module,exports){
+},{}],11:[function(require,module,exports){
 (function (process){
 /*!
  * Vue.js v1.0.10
@@ -10270,29 +10511,74 @@ if (process.env.NODE_ENV !== 'production') {
 
 module.exports = Vue;
 }).call(this,require('_process'))
-},{"_process":1}],11:[function(require,module,exports){
+},{"_process":1}],12:[function(require,module,exports){
+"use strict";
+
+exports.__esModule = true;
+exports["default"] = {
+	created: function created() {
+		this.getRoles();
+	},
+
+	data: function data() {
+		return {
+			roles: {}
+		};
+	},
+
+	methods: {
+		getRoles: function getRoles() {
+			this.roles = this.$parent._data.users[0].roles;
+		}
+
+	}
+};
+module.exports = exports["default"];
+;(typeof module.exports === "function"? module.exports.options: module.exports).template = "\n\t<div class=\"dropdown\">\n\t\t<button class=\"btn btn-default dropdown-toggle btn-xs\" type=\"button\" id=\"dropdownMenu1\" data-toggle=\"dropdown\" aria-haspopup=\"true\" aria-expanded=\"true\">\n\t\t\t{{ roles[0].label }}\n\t\t\t<span class=\"caret\"></span>\n\t\t</button>\n\t\t<ul class=\"dropdown-menu\" aria-labelledby=\"dropdownMenu1\">\n\t\t\t<li v-for=\"role in roles\"><a href=\"#\">{{ role.label }}</a></li>\n\t\t</ul>\n\t</div>\n"
+if (module.hot) {(function () {  module.hot.accept()
+  var hotAPI = require("vue-hot-reload-api")
+  hotAPI.install(require("vue"), true)
+  if (!hotAPI.compatible) return
+  var id = "C:\\Users\\PoppaLap\\www\\projects\\nxpanel\\resources\\assets\\js\\components\\UserRolesDropdown.vue"
+  if (!module.hot.data) {
+    hotAPI.createRecord(id, module.exports)
+  } else {
+    hotAPI.update(id, module.exports, module.exports.template)
+  }
+})()}
+},{"vue":11,"vue-hot-reload-api":2}],13:[function(require,module,exports){
 'use strict';
 
-module.exports = {
-	template: require('./accounts-table.template.html'),
+exports.__esModule = true;
+exports['default'] = {
+	components: {
+		'roles': require('./UserRolesDropdown.vue')
+	},
 
 	created: function created() {
 		this.fetchAllUsers();
 	},
 
+	detached: function detached() {
+		this.$dispatch('detached', 'accounts');
+	},
+
 	data: function data() {
 		return {
-			users: {}
+			users: {},
+			loaded: false
 		};
 	},
 
 	methods: {
 		fetchAllUsers: function fetchAllUsers() {
 
-			if (!jQuery.isEmptyObject(this.users)) return;
+			if (!jQuery.isEmptyObject(this.users)) this.users = {};
 
 			this.$http.get('/api/users-get').success(function (users) {
 				this.users = users;
+				this.$dispatch('loaded');
+				this.loaded = true;
 			}).error(function () {
 				return {
 					message: "There was an error while fetching the users!"
@@ -10303,49 +10589,111 @@ module.exports = {
 
 	events: {}
 };
-
-},{"./accounts-table.template.html":12}],12:[function(require,module,exports){
-module.exports = '<table class="table table-condensed table-hover margin-top-30">\n    <thead>\n        <tr><th>headers</th></tr>\n    </thead>\n    <tbody>\n        <tr v-for="user in users"><th>{{ user.name }}</th></tr>\n    </tbody>\n</table>';
-},{}],13:[function(require,module,exports){
+module.exports = exports['default'];
+;(typeof module.exports === "function"? module.exports.options: module.exports).template = "\n\t<table class=\"table table-condensed table-hover margin-top-30\">\n\t    <thead>\n\t    \t<tr>\n\t    \t\t<th>ID</th>\n\t\t        <th>Name</th>\n\t\t     \t<th>Email</th>\n\t\t        <th>Password</th>\n\t\t       \t<th>Profile</th>\n\t\t     \t<th>Role</th>\n\t     \t</tr>\n\t    </thead>\n\t    <tbody>\n\t        <tr v-for=\"user in users\">\n\t        \t<th>{{ user.id }}</th>\n\t        \t<th>{{ user.name }}</th>\n\t        \t<th>{{ user.email }}</th>\n\t        \t<th><button class=\"btn btn-default btn-xs\">Change Password</button></th>\n\t        \t<th></th>\n\t        \t<th><roles></roles></th>\n\t        </tr>\n\t    </tbody>\n\t</table>\n"
+if (module.hot) {(function () {  module.hot.accept()
+  var hotAPI = require("vue-hot-reload-api")
+  hotAPI.install(require("vue"), true)
+  if (!hotAPI.compatible) return
+  var id = "C:\\Users\\PoppaLap\\www\\projects\\nxpanel\\resources\\assets\\js\\components\\UsersTable.vue"
+  if (!module.hot.data) {
+    hotAPI.createRecord(id, module.exports)
+  } else {
+    hotAPI.update(id, module.exports, module.exports.template)
+  }
+})()}
+},{"./UserRolesDropdown.vue":12,"vue":11,"vue-hot-reload-api":2}],14:[function(require,module,exports){
 'use strict';
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+
+var _viewsAdminDashboardVue = require('./views/AdminDashboard.vue');
+
+var _viewsAdminDashboardVue2 = _interopRequireDefault(_viewsAdminDashboardVue);
 
 var Vue = require('vue');
-
 Vue.use(require('vue-resource'));
 
-new Vue({
+var vm = new Vue({
    el: '#app',
 
+   ready: function ready() {},
+
+   data: function data() {
+      return {};
+   },
+
    components: {
-      'admin-dashboard': require('./views/admin-dashboard')
-   }
+      'dashboard': _viewsAdminDashboardVue2['default']
+   },
+
+   methods: {}
+
 });
 
-},{"./views/admin-dashboard":14,"vue":10,"vue-resource":3}],14:[function(require,module,exports){
+},{"./views/AdminDashboard.vue":15,"vue":11,"vue-resource":4}],15:[function(require,module,exports){
 'use strict';
 
-module.exports = {
-	template: require('./admin-dashboard.template.html'),
-
+exports.__esModule = true;
+exports['default'] = {
 	components: {
-		'accounts-table': require('../components/accounts-table')
+		'users': require('../components/UsersTable.vue')
+	},
+
+	created: function created() {
+		this.updateTab('dashboard');
 	},
 
 	data: function data() {
 		return {
-			tab: 'dashboard'
+			tab: '',
+			loading: false,
+			refreshing: false
 		};
+	},
+
+	events: {
+
+		'loaded': function loaded() {
+			this.loading = false;
+			this.refreshing = false;
+		},
+
+		'detached': function detached(component) {
+			if (this.refreshing) {
+				this.updateTab(component);
+			}
+		}
 	},
 
 	methods: {
 		updateTab: function updateTab(tab) {
+			if (this.tab == tab) return;
+
 			this.tab = tab;
+			this.loading = true;
+		},
+
+		'refresh': function refresh(tab) {
+			this.tab = '';
+			this.refreshing = true;
 		}
+
 	}
 };
-
-},{"../components/accounts-table":11,"./admin-dashboard.template.html":15}],15:[function(require,module,exports){
-module.exports = '<ul class="nav nav-tabs">\n    <li role="presentation"\n    	v-on:click="updateTab(\'dashboard\')"  \n    	class="active" \n    	data-toggle="tab"><a href="#">Dashboard</a></li>\n\n    <li role="presentation" \n    	v-on:click="updateTab(\'accounts\')" \n    	data-toggle="tab"><a href="#">Accounts</a></li>\n\n    <li role="presentation"\n    	v-on:click="updateTab(\'roles_perms\')"\n    	data-toggle="tab"><a href="#">Roles &amp; Permissions</a></li>\n</ul>\n\n<div class="btn-toolbar pull-right" role="toolbar" aria-label="Toolbar with button groups">\n	<div class="btn-group" role="group" aria-label="First group">\n		<button type="button" class="btn btn-default"><i class="fa fa-refresh"></i></button>\n	</div> \n</div>\n\n<component is="accounts-table" v-if="tab == \'accounts\'"></component>';
-},{}]},{},[13]);
+module.exports = exports['default'];
+;(typeof module.exports === "function"? module.exports.options: module.exports).template = "\n\t<ul class=\"nav nav-tabs\">\n\t    <li role=\"presentation\" v-on:click=\"updateTab('dashboard')\" class=\"active\" data-toggle=\"tab\"><a href=\"#\">Dashboard</a></li>\n\n\t    <li role=\"presentation\" v-on:click=\"updateTab('accounts')\" data-toggle=\"tab\"><a href=\"#\">Accounts</a></li>\n\n\t    <li role=\"presentation\" v-on:click=\"updateTab('roles_perms')\" data-toggle=\"tab\"><a href=\"#\">Roles &amp; Permissions</a></li>\n\t</ul>\n\n\t<div class=\"btn-toolbar pull-right\" role=\"toolbar\" aria-label=\"Toolbar with button groups\" v-show=\"!loading\">\n\t\t<div class=\"btn-group\" role=\"group\" aria-label=\"First group\">\n\t\t\t<button type=\"button\" class=\"btn btn-default\" v-on:click=\"refresh(tab)\"><i class=\"fa fa-refresh\"></i></button>\n\t\t</div> \n\t</div>\n\n\t<div class=\"loading\" v-show=\"loading\"></div>\n\n\t<users v-if=\"tab == 'accounts'\"></users>\n"
+if (module.hot) {(function () {  module.hot.accept()
+  var hotAPI = require("vue-hot-reload-api")
+  hotAPI.install(require("vue"), true)
+  if (!hotAPI.compatible) return
+  var id = "C:\\Users\\PoppaLap\\www\\projects\\nxpanel\\resources\\assets\\js\\views\\AdminDashboard.vue"
+  if (!module.hot.data) {
+    hotAPI.createRecord(id, module.exports)
+  } else {
+    hotAPI.update(id, module.exports, module.exports.template)
+  }
+})()}
+},{"../components/UsersTable.vue":13,"vue":11,"vue-hot-reload-api":2}]},{},[14]);
 
 //# sourceMappingURL=main.js.map

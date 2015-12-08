@@ -2,14 +2,14 @@
   "private": true,
   "devDependencies": {
     "babel-runtime": "^6.3.13",
-    "gulp": "^3.8.8"
+    "gulp": "^3.8.8",
+    "vueify": "^7.0.2"
   },
   "dependencies": {
     "bootstrap": "^3.3.5",
     "font-awesome": "^4.4.0",
     "jquery": "^2.1.4",
     "laravel-elixir": "^3.0.0",
-    "laravel-elixir-vueify": "^1.0.0",
     "vue-resource": "^0.1.17"
   }
 }

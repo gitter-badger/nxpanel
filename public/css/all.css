@@ -30,4 +30,11 @@ body {
 .margin-top-30 {
   margin-top: 30px;
 }
+.loading {
+  display: block;
+  background: url('/images/spinner.gif') no-repeat center;
+  width: 124px;
+  height: 124px;
+  margin: 0 auto;
+}
 

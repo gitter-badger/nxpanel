@@ -93,6 +93,10 @@ Route::group(['namespace' => 'Auth', 'as' => 'Auth::', 'prefix' => 'auth'], func
 // API ROUTES FOR VUE
 Route::group(['prefix' => 'api'], function() {
     get('users-get', function() {
-        return App\User::all();
+        return App\User::with('roles')->get();
+    });
+
+    get('roles-get', function() {
+        return App\Role::all();
     });
 });

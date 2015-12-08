@@ -2,6 +2,6 @@
 
 @section('container-main')
     <div class="dashboard-container">
-    	<component is="admin-dashboard"></component>
+    	<dashboard></dashboard>
     </div>
 @stop
