@@ -10512,51 +10512,15 @@ if (process.env.NODE_ENV !== 'production') {
 module.exports = Vue;
 }).call(this,require('_process'))
 },{"_process":1}],12:[function(require,module,exports){
-"use strict";
-
-exports.__esModule = true;
-exports["default"] = {
-	created: function created() {
-		this.getRoles();
-	},
-
-	data: function data() {
-		return {
-			roles: {}
-		};
-	},
-
-	methods: {
-		getRoles: function getRoles() {
-			this.roles = this.$parent._data.users[0].roles;
-		}
-
-	}
-};
-module.exports = exports["default"];
-;(typeof module.exports === "function"? module.exports.options: module.exports).template = "\n\t<div class=\"dropdown\">\n\t\t<button class=\"btn btn-default dropdown-toggle btn-xs\" type=\"button\" id=\"dropdownMenu1\" data-toggle=\"dropdown\" aria-haspopup=\"true\" aria-expanded=\"true\">\n\t\t\t{{ roles[0].label }}\n\t\t\t<span class=\"caret\"></span>\n\t\t</button>\n\t\t<ul class=\"dropdown-menu\" aria-labelledby=\"dropdownMenu1\">\n\t\t\t<li v-for=\"role in roles\"><a href=\"#\">{{ role.label }}</a></li>\n\t\t</ul>\n\t</div>\n"
-if (module.hot) {(function () {  module.hot.accept()
-  var hotAPI = require("vue-hot-reload-api")
-  hotAPI.install(require("vue"), true)
-  if (!hotAPI.compatible) return
-  var id = "C:\\Users\\PoppaLap\\www\\projects\\nxpanel\\resources\\assets\\js\\components\\UserRolesDropdown.vue"
-  if (!module.hot.data) {
-    hotAPI.createRecord(id, module.exports)
-  } else {
-    hotAPI.update(id, module.exports, module.exports.template)
-  }
-})()}
-},{"vue":11,"vue-hot-reload-api":2}],13:[function(require,module,exports){
 'use strict';
 
 exports.__esModule = true;
 exports['default'] = {
-	components: {
-		'roles': require('./UserRolesDropdown.vue')
-	},
+	components: {},
 
 	created: function created() {
 		this.fetchAllUsers();
+		this.fetchAllRoles();
 	},
 
 	detached: function detached() {
@@ -10566,6 +10530,7 @@ exports['default'] = {
 	data: function data() {
 		return {
 			users: {},
+			roles: {},
 			loaded: false
 		};
 	},
@@ -10584,13 +10549,28 @@ exports['default'] = {
 					message: "There was an error while fetching the users!"
 				};
 			});
+		},
+
+		fetchAllRoles: function fetchAllRoles() {
+
+			if (!jQuery.isEmptyObject(this.roles)) this.roles = {};
+
+			this.$http.get('/api/roles-get').success(function (roles) {
+				this.roles = roles;
+				this.$dispatch('loaded');
+				this.loaded = true;
+			}).error(function () {
+				return {
+					message: "There was an error while fetching the roles!"
+				};
+			});
 		}
 	},
 
 	events: {}
 };
 module.exports = exports['default'];
-;(typeof module.exports === "function"? module.exports.options: module.exports).template = "\n\t<table class=\"table table-condensed table-hover margin-top-30\">\n\t    <thead>\n\t    \t<tr>\n\t    \t\t<th>ID</th>\n\t\t        <th>Name</th>\n\t\t     \t<th>Email</th>\n\t\t        <th>Password</th>\n\t\t       \t<th>Profile</th>\n\t\t     \t<th>Role</th>\n\t     \t</tr>\n\t    </thead>\n\t    <tbody>\n\t        <tr v-for=\"user in users\">\n\t        \t<th>{{ user.id }}</th>\n\t        \t<th>{{ user.name }}</th>\n\t        \t<th>{{ user.email }}</th>\n\t        \t<th><button class=\"btn btn-default btn-xs\">Change Password</button></th>\n\t        \t<th></th>\n\t        \t<th><roles></roles></th>\n\t        </tr>\n\t    </tbody>\n\t</table>\n"
+;(typeof module.exports === "function"? module.exports.options: module.exports).template = "\n\t<table class=\"table table-condensed table-hover margin-top-30\">\n\t    <thead>\n\t    \t<tr>\n\t    \t\t<th>ID</th>\n\t\t        <th>Name</th>\n\t\t     \t<th>Email</th>\n\t\t        <th>Password</th>\n\t\t       \t<th>Profile</th>\n\t\t     \t<th>Role</th>\n\t     \t</tr>\n\t    </thead>\n\t    <tbody>\n\t        <tr v-for=\"user in users\">\n\t        \t<th>{{ user.id }}</th>\n\t        \t<th>{{ user.name }}</th>\n\t        \t<th>{{ user.email }}</th>\n\t        \t<th><button class=\"btn btn-default btn-xs\">Change Password</button></th>\n\t        \t<th></th>\n\t        \t<th>\n\t        \t\t<div class=\"dropdown\">\n\t\t\t\t\t\t<button class=\"btn btn-default dropdown-toggle btn-xs\" type=\"button\" id=\"dropdownMenu1\" data-toggle=\"dropdown\" aria-haspopup=\"true\" aria-expanded=\"true\">\n\t\t\t\t\t\t\t{{ user.roles[0].name }}\n\n\t\t\t\t\t\t\t<span class=\"caret\"></span>\n\t\t\t\t\t\t</button>\n\t\t\t\t\t\t<ul class=\"dropdown-menu\" aria-labelledby=\"dropdownMenu1\">\n\t\t\t\t\t\t\t<li v-for=\"role in roles\"><a href=\"#\">{{ role.label }}</a></li>\n\t\t\t\t\t\t</ul>\n\t\t\t\t\t</div>\n\t        \t</th>\n\t        </tr>\n\t    </tbody>\n\t</table>\n"
 if (module.hot) {(function () {  module.hot.accept()
   var hotAPI = require("vue-hot-reload-api")
   hotAPI.install(require("vue"), true)
@@ -10602,19 +10582,13 @@ if (module.hot) {(function () {  module.hot.accept()
     hotAPI.update(id, module.exports, module.exports.template)
   }
 })()}
-},{"./UserRolesDropdown.vue":12,"vue":11,"vue-hot-reload-api":2}],14:[function(require,module,exports){
+},{"vue":11,"vue-hot-reload-api":2}],13:[function(require,module,exports){
 'use strict';
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
-
-var _viewsAdminDashboardVue = require('./views/AdminDashboard.vue');
-
-var _viewsAdminDashboardVue2 = _interopRequireDefault(_viewsAdminDashboardVue);
 
 var Vue = require('vue');
 Vue.use(require('vue-resource'));
 
-var vm = new Vue({
+new Vue({
    el: '#app',
 
    ready: function ready() {},
@@ -10624,14 +10598,14 @@ var vm = new Vue({
    },
 
    components: {
-      'dashboard': _viewsAdminDashboardVue2['default']
+      'dashboard': require('./views/AdminDashboard.vue')
    },
 
    methods: {}
 
 });
 
-},{"./views/AdminDashboard.vue":15,"vue":11,"vue-resource":4}],15:[function(require,module,exports){
+},{"./views/AdminDashboard.vue":14,"vue":11,"vue-resource":4}],14:[function(require,module,exports){
 'use strict';
 
 exports.__esModule = true;
@@ -10694,6 +10668,6 @@ if (module.hot) {(function () {  module.hot.accept()
     hotAPI.update(id, module.exports, module.exports.template)
   }
 })()}
-},{"../components/UsersTable.vue":13,"vue":11,"vue-hot-reload-api":2}]},{},[14]);
+},{"../components/UsersTable.vue":12,"vue":11,"vue-hot-reload-api":2}]},{},[13]);
 
 //# sourceMappingURL=main.js.map

@@ -17,7 +17,24 @@
 	        	<th>{{ user.email }}</th>
 	        	<th><button class="btn btn-default btn-xs">Change Password</button></th>
 	        	<th></th>
-	        	<th><roles></roles></th>
+	        	<th>
+	        		<div class="dropdown">
+						<button class="btn btn-default dropdown-toggle btn-xs" 
+								type="button" 
+								id="dropdownMenu1" 
+								data-toggle="dropdown" 
+								aria-haspopup="true" 
+								aria-expanded="true"
+						>
+							{{ user.roles[0].name }}
+
+							<span class="caret"></span>
+						</button>
+						<ul class="dropdown-menu" aria-labelledby="dropdownMenu1">
+							<li v-for="role in roles"><a href="#">{{ role.label }}</a></li>
+						</ul>
+					</div>
+	        	</th>
 	        </tr>
 	    </tbody>
 	</table>
@@ -26,11 +43,12 @@
 <script>
 	export default {
 		components: {
-			'roles': require('./UserRolesDropdown.vue')
+			
 		},
 
 		created: function() {
 			this.fetchAllUsers();
+			this.fetchAllRoles();
 		},
 
 		detached: function() {
@@ -40,13 +58,14 @@
 		data: function() {
 			return {
 				users: {},
+				roles: {},
 				loaded: false
 			}
 		},
 
 		methods: {
 			fetchAllUsers: function() {
-				
+
 				if(!jQuery.isEmptyObject(this.users)) 
 					this.users = {};
 
@@ -59,6 +78,24 @@
 					.error(function() {
 						return {
 							message: "There was an error while fetching the users!"
+						}
+					})
+			},
+
+			fetchAllRoles: function() {
+
+				if(!jQuery.isEmptyObject(this.roles)) 
+					this.roles = {};
+
+				this.$http.get('/api/roles-get')
+					.success(function(roles) {
+						this.roles = roles;
+						this.$dispatch('loaded');
+						this.loaded = true;
+					})
+					.error(function() {
+						return {
+							message: "There was an error while fetching the roles!"
 						}
 					})
 			},

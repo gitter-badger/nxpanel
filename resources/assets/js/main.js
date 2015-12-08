@@ -1,9 +1,7 @@
 var Vue = require('vue');
 Vue.use(require('vue-resource'));
 
-import dashboard from './views/AdminDashboard.vue';
-
-var vm = new Vue({
+new Vue({
    el: '#app',
 
    ready: function() {
@@ -12,12 +10,12 @@ var vm = new Vue({
 
    data: function() {
 	   	return {
-
+            
 	   	}
    },
 
    components: {
-   		'dashboard': dashboard,
+   		'dashboard': require('./views/AdminDashboard.vue'),
    },
 
    methods: {

@@ -28,7 +28,7 @@
 <script>
 	export default {
 		components: {
-			'users': require('../components/UsersTable.vue')
+			'users': require('../components/UsersTable.vue'),
 		},
 
 		created: function() {
