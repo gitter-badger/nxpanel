@@ -14,7 +14,7 @@ class UserTableSeeder extends Seeder
         App\User::create([
             'name' => 'admin',
             'email' => 'admin@nxpanel.com',
-            'password' => bcrypt('admin')
+            'password' => bcrypt('admin'),
         ]);
 
         App\Profile::create([

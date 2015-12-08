@@ -16,7 +16,7 @@
 
 	<div class="btn-toolbar pull-right" role="toolbar" aria-label="Toolbar with button groups" v-show="!loading">
 		<div class="btn-group" role="group" aria-label="First group">
-			<button type="button" class="btn btn-default" v-on:click="refresh(tab)"><i class="fa fa-refresh"></i></button>
+			<button id="refresh" type="button" class="btn btn-default" v-on:click="refresh(tab)"><i class="fa fa-refresh"></i></button>
 		</div> 
 	</div>
 

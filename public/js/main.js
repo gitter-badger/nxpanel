@@ -10512,15 +10512,38 @@ if (process.env.NODE_ENV !== 'production') {
 module.exports = Vue;
 }).call(this,require('_process'))
 },{"_process":1}],12:[function(require,module,exports){
+var inserted = exports.cache = {}
+
+exports.insert = function (css) {
+  if (inserted[css]) return
+  inserted[css] = true
+
+  var elem = document.createElement('style')
+  elem.setAttribute('type', 'text/css')
+
+  if ('textContent' in elem) {
+    elem.textContent = css
+  } else {
+    elem.styleSheet.cssText = css
+  }
+
+  document.getElementsByTagName('head')[0].appendChild(elem)
+  return elem
+}
+
+},{}],13:[function(require,module,exports){
 'use strict';
 
 exports.__esModule = true;
 exports['default'] = {
-	components: {},
+	components: {
+		'dropdown': require('./dropdown.vue')
+	},
 
 	created: function created() {
 		this.fetchAllUsers();
 		this.fetchAllRoles();
+		this.fetchAllStatuses();
 	},
 
 	detached: function detached() {
@@ -10531,6 +10554,7 @@ exports['default'] = {
 		return {
 			users: {},
 			roles: {},
+			statuses: {},
 			loaded: false
 		};
 	},
@@ -10564,13 +10588,28 @@ exports['default'] = {
 					message: "There was an error while fetching the roles!"
 				};
 			});
+		},
+
+		fetchAllStatuses: function fetchAllStatuses() {
+
+			if (!jQuery.isEmptyObject(this.statuses)) this.statuses = {};
+
+			this.$http.get('/api/statuses-get').success(function (statuses) {
+				this.statuses = statuses;
+				this.$dispatch('loaded');
+				this.loaded = true;
+			}).error(function () {
+				return {
+					message: "There was an error while fetching the statuses!"
+				};
+			});
 		}
 	},
 
 	events: {}
 };
 module.exports = exports['default'];
-;(typeof module.exports === "function"? module.exports.options: module.exports).template = "\n\t<table class=\"table table-condensed table-hover margin-top-30\">\n\t    <thead>\n\t    \t<tr>\n\t    \t\t<th>ID</th>\n\t\t        <th>Name</th>\n\t\t     \t<th>Email</th>\n\t\t        <th>Password</th>\n\t\t       \t<th>Profile</th>\n\t\t     \t<th>Role</th>\n\t     \t</tr>\n\t    </thead>\n\t    <tbody>\n\t        <tr v-for=\"user in users\">\n\t        \t<th>{{ user.id }}</th>\n\t        \t<th>{{ user.name }}</th>\n\t        \t<th>{{ user.email }}</th>\n\t        \t<th><button class=\"btn btn-default btn-xs\">Change Password</button></th>\n\t        \t<th></th>\n\t        \t<th>\n\t        \t\t<div class=\"dropdown\">\n\t\t\t\t\t\t<button class=\"btn btn-default dropdown-toggle btn-xs\" type=\"button\" id=\"dropdownMenu1\" data-toggle=\"dropdown\" aria-haspopup=\"true\" aria-expanded=\"true\">\n\t\t\t\t\t\t\t{{ user.roles[0].name }}\n\n\t\t\t\t\t\t\t<span class=\"caret\"></span>\n\t\t\t\t\t\t</button>\n\t\t\t\t\t\t<ul class=\"dropdown-menu\" aria-labelledby=\"dropdownMenu1\">\n\t\t\t\t\t\t\t<li v-for=\"role in roles\"><a href=\"#\">{{ role.label }}</a></li>\n\t\t\t\t\t\t</ul>\n\t\t\t\t\t</div>\n\t        \t</th>\n\t        </tr>\n\t    </tbody>\n\t</table>\n"
+;(typeof module.exports === "function"? module.exports.options: module.exports).template = "\n<dropdown src=\"/api/roles-get\" type=\"danger\" size=\"lg\">\n\t\tSelect A Role\n</dropdown>\n\n\t<table class=\"table table-condensed table-hover margin-top-30\">\n\t    <thead>\n\t    \t<tr>\n\t    \t\t<th>ID</th>\n\t\t        <th>Name</th>\n\t\t     \t<th>Email</th>\n\t\t        <th>Password</th>\n\t\t       \t<th>Profile</th>\n\t\t     \t<th>Role</th>\n\t\t     \t<th>Status</th>\n\t     \t</tr>\n\t    </thead>\n\t    <tbody>\n\t        <tr v-for=\"user in users\">\n\t        \t<th>{{ user.id }}</th>\n\t        \t<th>{{ user.name }}</th>\n\t        \t<th>{{ user.email }}</th>\n\t        \t<th><button class=\"btn btn-default btn-xs\">Edit</button></th>\n\t        \t<th><button class=\"btn btn-default btn-xs\">Edit</button></th>\n\t        \t<th>\n\t        \t\t<div class=\"dropdown\">\n\t\t\t\t\t\t<button class=\"btn btn-default dropdown-toggle btn-xs\" type=\"button\" id=\"dropdownMenu1\" data-toggle=\"dropdown\" aria-haspopup=\"true\" aria-expanded=\"true\">\n\t\t\t\t\t\t\t{{ user.roles[0].name }}\n\n\t\t\t\t\t\t\t<span class=\"caret\"></span>\n\t\t\t\t\t\t</button>\n\t\t\t\t\t\t<ul class=\"dropdown-menu\" aria-labelledby=\"dropdownMenu1\">\n\t\t\t\t\t\t\t<li v-for=\"role in roles\"><a href=\"#\">{{ role.label }}</a></li>\n\t\t\t\t\t\t</ul>\n\t\t\t\t\t</div>\n\t        \t</th>\n\t        \t<th>\n\t        \t\t<div class=\"dropdown\">\n\t\t\t\t\t\t<button class=\"btn btn-default dropdown-toggle btn-xs\" type=\"button\" id=\"dropdownMenu1\" data-toggle=\"dropdown\" aria-haspopup=\"true\" aria-expanded=\"true\">\n\t\t\t\t\t\t\t{{ user.status.label }}\n\n\t\t\t\t\t\t\t<span class=\"caret\"></span>\n\t\t\t\t\t\t</button>\n\t\t\t\t\t\t<ul class=\"dropdown-menu\" aria-labelledby=\"dropdownMenu1\">\n\t\t\t\t\t\t\t<li v-for=\"status in statuses\"><a href=\"#\">{{ status.label }}</a></li>\n\t\t\t\t\t\t</ul>\n\t\t\t\t\t</div>\n\t        \t</th>\n\t        </tr>\n\t    </tbody>\n\t</table>\n"
 if (module.hot) {(function () {  module.hot.accept()
   var hotAPI = require("vue-hot-reload-api")
   hotAPI.install(require("vue"), true)
@@ -10582,7 +10621,89 @@ if (module.hot) {(function () {  module.hot.accept()
     hotAPI.update(id, module.exports, module.exports.template)
   }
 })()}
-},{"vue":11,"vue-hot-reload-api":2}],13:[function(require,module,exports){
+},{"./dropdown.vue":14,"vue":11,"vue-hot-reload-api":2}],14:[function(require,module,exports){
+var __vueify_style__ = require("vueify-insert-css").insert("\n\t\n")
+'use strict';
+
+exports.__esModule = true;
+exports['default'] = {
+
+	props: {
+		src: {
+			type: String,
+			'default': '',
+			required: true
+		},
+
+		size: {
+			type: String,
+			defualt: 'sm'
+		},
+
+		type: {
+			type: String,
+			'default': 'default'
+		}
+	},
+
+	attached: function attached() {
+		this.fetchData(this.src);
+		this.setElID();
+	},
+
+	data: function data() {
+		return {
+			items: {},
+
+			elID: 0,
+
+			success: false
+		};
+	},
+
+	methods: {
+		fetchData: function fetchData(src) {
+
+			if (!jQuery.isEmptyObject(this.items)) this.items = {};
+
+			this.$http.get(src).success(function (items) {
+				this.items = items;
+				this.$dispatch('loaded');
+				this.success = true;
+			}).error(function () {
+				this.success = false;
+
+				return {
+					message: "There was an error while fetching the items!",
+					success: false
+				};
+			});
+		},
+
+		setElID: function setElID() {
+			this.elID = Math.floor(Math.random() * (50000000 - 1000 + 1)) + 1000;
+		}
+	}
+
+};
+module.exports = exports['default'];
+;(typeof module.exports === "function"? module.exports.options: module.exports).template = "\n<!--\n\t<dropdown src=\"/api/roles-get\">\n\t\tSelect A Role\n\t</dropdown>\n-->\n\t<div class=\"dropdown\">\n\t\t\t\t\t\t<button v-bind:class=\"{\n\t\t\t\t\t\t\t      'btn':\t\t\t true,\n\t\t\t\t\t\t\t      'dropdown-toggle': true,\n\t\t\t\t\t\t\t      'btn-xs':\t\t\t(size == 'xs'),\n\t\t\t\t\t\t\t      'btn-sm':\t\t\t(size == 'sm'),\n\t\t\t\t\t\t\t      'btn-md':\t\t\t(size == 'md'),\n\t\t\t\t\t\t\t      'btn-lg':\t\t\t(size == 'lg'),\n\t\t\t\t\t\t\t      'btn-default':\t(type == 'default'),\n\t\t\t\t\t\t\t      'btn-primary':\t(type == 'primary'),\n\t\t\t\t\t\t\t      'btn-info':\t\t(type == 'info'),\n\t\t\t\t\t\t\t      'btn-warning':\t(type == 'warning'),\n\t\t\t\t\t\t\t      'btn-danger':\t\t(type == 'danger')\n\t\t\t\t\t\t\t    }\" type=\"button\" id=\"{{ elID }}\" data-toggle=\"dropdown\" aria-haspopup=\"true\" aria-expanded=\"true\">\n\t\t\t\t\t\t\t<slot></slot>\n\n\t\t\t\t\t\t\t<span class=\"caret\"></span>\n\t\t\t\t\t\t</button>\n\t\t\t\t\t\t<ul class=\"dropdown-menu\" aria-labelledby=\"{{ elID }}\">\n\t\t\t\t\t\t\t<li v-for=\"item in items\"><a href=\"#\">{{ item.label }}</a></li>\n\t\t\t\t\t\t</ul>\n\t\t\t\t\t</div>\n"
+if (module.hot) {(function () {  module.hot.accept()
+  var hotAPI = require("vue-hot-reload-api")
+  hotAPI.install(require("vue"), true)
+  if (!hotAPI.compatible) return
+  var id = "C:\\Users\\PoppaLap\\www\\projects\\nxpanel\\resources\\assets\\js\\components\\dropdown.vue"
+  module.hot.dispose(function () {
+    require("vueify-insert-css").cache["\n\t\n"] = false
+    document.head.removeChild(__vueify_style__)
+  })
+  if (!module.hot.data) {
+    hotAPI.createRecord(id, module.exports)
+  } else {
+    hotAPI.update(id, module.exports, module.exports.template)
+  }
+})()}
+},{"vue":11,"vue-hot-reload-api":2,"vueify-insert-css":12}],15:[function(require,module,exports){
 'use strict';
 
 var Vue = require('vue');
@@ -10605,7 +10726,7 @@ new Vue({
 
 });
 
-},{"./views/AdminDashboard.vue":14,"vue":11,"vue-resource":4}],14:[function(require,module,exports){
+},{"./views/AdminDashboard.vue":16,"vue":11,"vue-resource":4}],16:[function(require,module,exports){
 'use strict';
 
 exports.__esModule = true;
@@ -10656,7 +10777,7 @@ exports['default'] = {
 	}
 };
 module.exports = exports['default'];
-;(typeof module.exports === "function"? module.exports.options: module.exports).template = "\n\t<ul class=\"nav nav-tabs\">\n\t    <li role=\"presentation\" v-on:click=\"updateTab('dashboard')\" class=\"active\" data-toggle=\"tab\"><a href=\"#\">Dashboard</a></li>\n\n\t    <li role=\"presentation\" v-on:click=\"updateTab('accounts')\" data-toggle=\"tab\"><a href=\"#\">Accounts</a></li>\n\n\t    <li role=\"presentation\" v-on:click=\"updateTab('roles_perms')\" data-toggle=\"tab\"><a href=\"#\">Roles &amp; Permissions</a></li>\n\t</ul>\n\n\t<div class=\"btn-toolbar pull-right\" role=\"toolbar\" aria-label=\"Toolbar with button groups\" v-show=\"!loading\">\n\t\t<div class=\"btn-group\" role=\"group\" aria-label=\"First group\">\n\t\t\t<button type=\"button\" class=\"btn btn-default\" v-on:click=\"refresh(tab)\"><i class=\"fa fa-refresh\"></i></button>\n\t\t</div> \n\t</div>\n\n\t<div class=\"loading\" v-show=\"loading\"></div>\n\n\t<users v-if=\"tab == 'accounts'\"></users>\n"
+;(typeof module.exports === "function"? module.exports.options: module.exports).template = "\n\t<ul class=\"nav nav-tabs\">\n\t    <li role=\"presentation\" v-on:click=\"updateTab('dashboard')\" class=\"active\" data-toggle=\"tab\"><a href=\"#\">Dashboard</a></li>\n\n\t    <li role=\"presentation\" v-on:click=\"updateTab('accounts')\" data-toggle=\"tab\"><a href=\"#\">Accounts</a></li>\n\n\t    <li role=\"presentation\" v-on:click=\"updateTab('roles_perms')\" data-toggle=\"tab\"><a href=\"#\">Roles &amp; Permissions</a></li>\n\t</ul>\n\n\t<div class=\"btn-toolbar pull-right\" role=\"toolbar\" aria-label=\"Toolbar with button groups\" v-show=\"!loading\">\n\t\t<div class=\"btn-group\" role=\"group\" aria-label=\"First group\">\n\t\t\t<button id=\"refresh\" type=\"button\" class=\"btn btn-default\" v-on:click=\"refresh(tab)\"><i class=\"fa fa-refresh\"></i></button>\n\t\t</div> \n\t</div>\n\n\t<div class=\"loading\" v-show=\"loading\"></div>\n\n\t<users v-if=\"tab == 'accounts'\"></users>\n"
 if (module.hot) {(function () {  module.hot.accept()
   var hotAPI = require("vue-hot-reload-api")
   hotAPI.install(require("vue"), true)
@@ -10668,6 +10789,6 @@ if (module.hot) {(function () {  module.hot.accept()
     hotAPI.update(id, module.exports, module.exports.template)
   }
 })()}
-},{"../components/UsersTable.vue":12,"vue":11,"vue-hot-reload-api":2}]},{},[13]);
+},{"../components/UsersTable.vue":13,"vue":11,"vue-hot-reload-api":2}]},{},[15]);
 
 //# sourceMappingURL=main.js.map

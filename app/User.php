@@ -29,7 +29,7 @@ class User extends Model implements AuthenticatableContract,
      *
      * @var array
      */
-    protected $fillable = ['name', 'email', 'password'];
+    protected $fillable = ['name', 'email', 'password', 'status_id'];
 
     /**
      * The attributes excluded from the model's JSON form.
@@ -44,6 +44,14 @@ class User extends Model implements AuthenticatableContract,
     public function profile()
     {
         return $this->hasOne(Profile::class);
+    }
+
+    /**
+     * Get the status record associated with the user.
+     */
+    public function status()
+    {
+        return $this->belongsTo(Status::class);
     }
 
     /**

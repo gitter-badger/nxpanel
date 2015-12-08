@@ -2,6 +2,21 @@
 
 resource('posts', 'PostController');
 
+// API ROUTES FOR VUE
+Route::group(['prefix' => 'api'], function() {
+    get('users-get', function() {
+        return App\User::with(['roles', 'profile', 'status'])->get();
+    });
+
+    get('roles-get', function() {
+        return App\Role::all();
+    });
+
+    get('statuses-get', function() {
+        return App\Status::all();
+    });
+});
+
 Route::group(['namespace' => 'Admin', 'as' => 'Admin::', 'prefix' => 'admin', 'middleware' => 'auth'], function() {
     get('/', function() {
         if(!Auth::user()->hasRole('user')) {
@@ -88,15 +103,4 @@ Route::group(['namespace' => 'Auth', 'as' => 'Auth::', 'prefix' => 'auth'], func
         'as' => 'post_register',
         'uses' => 'AuthController@postRegister'
     ]);
-});
-
-// API ROUTES FOR VUE
-Route::group(['prefix' => 'api'], function() {
-    get('users-get', function() {
-        return App\User::with('roles')->get();
-    });
-
-    get('roles-get', function() {
-        return App\Role::all();
-    });
 });

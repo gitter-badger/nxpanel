@@ -13,7 +13,7 @@
 <script>
 	export default {
 		created: function() {
-			this.getRoles();
+			this.fetchAllRoles();
 		},
 
 		data: function() {
@@ -23,10 +23,21 @@
 		},
 
 		methods: {
-			getRoles: function() {
-				this.roles = this.$parent._data.roles;
-			},
+			fetchAllRoles: function() {
 
+				if(!jQuery.isEmptyObject(this.roles)) 
+					this.roles = {};
+
+				this.$http.get('/api/roles-get')
+					.success(function(roles) {
+						this.roles = roles;
+					})
+					.error(function() {
+						return {
+							message: "There was an error while fetching the roles!"
+						}
+					})
+			},
 		},
 	}
 </script>
